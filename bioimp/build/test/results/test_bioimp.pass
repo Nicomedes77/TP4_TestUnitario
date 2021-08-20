@@ -1,0 +1,46 @@
+---
+:source:
+  :path: test
+  :file: test_bioimp.c
+:successes:
+- :test: test_AD5933_tomaTemperatura
+  :line: 24
+  :message: ''
+  :unity_test_time: 0
+- :test: test_AD5933_Init
+  :line: 32
+  :message: ''
+  :unity_test_time: 0
+- :test: test_AD5933_NO_Init
+  :line: 40
+  :message: ''
+  :unity_test_time: 0
+- :test: test_lecturaRegistro
+  :line: 48
+  :message: ''
+  :unity_test_time: 0
+- :test: test_calculoFactorGanancia
+  :line: 58
+  :message: ''
+  :unity_test_time: 0
+- :test: test_ponerStandBy
+  :line: 68
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 6
+  :passed: 6
+  :failed: 0
+  :ignored: 0
+:stdout:
+- "\t\tReading from Register Address: 0x94...0x94"
+- "\t\tReading from Register Address: 0x95...0x95"
+- "\t\tReading from Register Address: 0x96...0x96"
+- "\t\tReading from Register Address: 0x97...0x97"
+- 'Calibration Step:'
+- "\tR=0"
+- "\tI=0"
+- "\t|Z|=2.000000"
+:time: 0.00225967600090371

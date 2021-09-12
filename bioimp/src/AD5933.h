@@ -117,15 +117,5 @@ void AD5933_StartSweep(void);
 double AD5933_CalculateGainFactor(unsigned long calibrationImpedance,char freqFunction);
 double AD5933_CalculateImpedance(double gainFactor,char freqFunction);
 
-bool wiringPiI2CWriteReg8(int i2cdevice,unsigned char writeD_0,unsigned char writeD_1);
-int wiringPiI2CReadReg8(int i2cdevice,unsigned char registerAddress);
-
-/*! Reads the real and the imaginary data and calculates the Gain Factor. */
-/*double AD5933_CalculateGainFactor(unsigned long calibrationImpedance,
-                                  unsigned char freqFunction);*/
-
-/*! Reads the real and the imaginary data and calculates the Impedance. */
-/*double AD5933_CalculateImpedance(double gainFactor,
-                                 unsigned char freqFunction);*/
 
 #endif /* __AD5933_H__ */

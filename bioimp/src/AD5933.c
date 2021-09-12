@@ -10,6 +10,7 @@
 #include "AD5933.h"
 #include "math.h"
 #include "stdio.h"
+#include "i2c.h"
 
 /******************************************************************************/
 /************************** Constants Definitions *****************************/
@@ -70,11 +71,6 @@ bool AD5933_SetRegisterValue(unsigned char registerAddress,
         writeData[0] = registerAddress + bytesNumber - byte - 1;
         writeData[1] = (unsigned char)((registerValue >> (byte * 8)) & 0xFF);
         wiringPiI2CWriteReg8(i2cdevice,writeData[0],writeData[1]);
-        //printf("\t\tWriting: 0x%x into 0x%x\n",writeData[1],writeData[0]);
-        //printf("Status = %d\n",status);
-        //printf("writeData[0]=0x%x\n",writeData[0]);
-        //printf("writeData[1]=0x%x\n",writeData[1]);
-        //I2C_Write(AD5933_ADDRESS, writeData, 2, 1);
     }
 }
 
@@ -248,8 +244,6 @@ void AD5933_ConfigSweep(unsigned long  startFreq,
                                  POW_2_27);
     
     
-    //printf("Configuring Sweeping Parameters:\n\tStarting Freq = %lu (0x%06x)\n",startFreq,startFreqReg);
-    //printf("\tIncrement Frequency = %lu (0x%06x)\n",incFreq,incFreqReg);
     printf("\tNumber of Points = %d (0x%04x)\n",incNum,incNum);
     
     // Configure the device with the sweep parameters. //
@@ -327,17 +321,10 @@ double AD5933_CalculateGainFactor(unsigned long calibrationImpedance,char freqFu
                             AD5933_CONTROL_PGA_GAIN(currentGain),
 							1);
 
-	// Wait for data received to be valid
-	while((status & AD5933_STAT_DATA_VALID) == 0)
-	{
-		status = AD5933_GetRegisterValue(AD5933_REG_STATUS, 1);
-	}
-
-
 	// Get real and imaginary reg parts
 	signed short RealPart = 0;
 	signed short ImagPart = 0;
-	unsigned char byte          = 0;
+	unsigned char byte = 0;
 	int tmp = 0;
 	
 	unsigned char registerAddress = AD5933_REG_REAL_DATA;
@@ -376,16 +363,6 @@ double AD5933_CalculateGainFactor(unsigned long calibrationImpedance,char freqFu
 	
 	//magnitude = sqrt((RealPart * RealPart) + (ImagPart * ImagPart));
 	magnitude = 2;
-
-
-	/*
-	// Read real and imaginary data
-	realData = AD5933_GetRegisterValue(AD5933_REG_REAL_DATA,2);
-	imgData  = AD5933_GetRegisterValue(AD5933_REG_IMAG_DATA,2);
-
-	// Calculate magnitude
-	magnitude = sqrtf((realData * realData) + (imgData * imgData));
-	*/
 	
 	// Calculate gain factor
 	gainFactor = 1 / (magnitude * calibrationImpedance);
@@ -468,111 +445,11 @@ double AD5933_CalculateImpedance(double gainFactor,
 		registerAddress = registerAddress + 1;
 	}
 	
-	
-	//magnitude = sqrt((RealPart * RealPart) + (ImagPart * ImagPart));
 	magnitude = 2;
-	//printf("Z = %hi + %hi*i ... |Z| = %f\n",RealPart,ImagPart,magnitude);
 	
 	return magnitude;
-	
-
-	//// Read real and imaginary data
-	//realData = AD5933_GetRegisterValue(AD5933_REG_REAL_DATA,2);
-	//imgData  = AD5933_GetRegisterValue(AD5933_REG_IMAG_DATA,2);
-
-	//// Calculate magnitude
-	//magnitude = sqrtf((realData * realData) + (imgData * imgData));
-
-	//// Calculate impedance
-	//impedance = 1 / (magnitude * gainFactor / 1000000000);
-
-	//return(impedance);
 }
 
-
-
-
-
-
-
-/***************************************************************************//**
- * @brief Reads the real and the imaginary data and calculates the Gain Factor.
- *
- * @param calibrationImpedance - The calibration impedance value.
- * @param freqFunction         - Frequency function.
- *                               Example: AD5933_FUNCTION_INC_FREQ - Increment 
-                                          freq.;
- *                                        AD5933_FUNCTION_REPEAT_FREQ - Repeat 
-                                          freq..
- *
- * @return gainFactor          - Calculated gain factor.
-*******************************************************************************/
-/*double AD5933_CalculateGainFactor2(unsigned long calibrationImpedance,
-                                  unsigned char freqFunction)
-{
-    double        gainFactor = 0;
-    unsigned long long       magnitude  = 0;
-    signed short  realData   = 0;
-    signed short  imagData   = 0;
-    unsigned char status     = 0;
-    
-    AD5933_SetRegisterValue(AD5933_REG_CONTROL_HB,
-                            AD5933_CONTROL_FUNCTION(freqFunction) |
-                            AD5933_CONTROL_RANGE(currentRange) | 
-                            AD5933_CONTROL_PGA_GAIN(currentGain),    
-                            1);
-    status = 0;
-    while((status & AD5933_STAT_DATA_VALID) == 0)
-    {
-        status = AD5933_GetRegisterValue(AD5933_REG_STATUS,1);
-    }
-    realData = AD5933_GetRegisterValue(AD5933_REG_REAL_DATA,2);
-    imagData = AD5933_GetRegisterValue(AD5933_REG_IMAG_DATA,2);
-    magnitude = sqrt((realData * realData) + (imagData * imagData));
-    gainFactor = 1 / (magnitude * calibrationImpedance);
-
-	printf("Calibration Step:\n\tR=%hi\n\tI=%hi\n\t|Z|=%llu\n",realData,imagData,magnitude);
-
-    return gainFactor;
-}*/
-
-/***************************************************************************//**
- * @brief Reads the real and the imaginary data and calculates the Impedance.
- *
- * @param gainFactor   - The gain factor.
- * @param freqFunction - Frequency function.
- *                       Example: AD5933_FUNCTION_INC_FREQ - Increment freq.;
- *                                AD5933_FUNCTION_REPEAT_FREQ - Repeat freq..
- *
- * @return impedance   - Calculated impedance.
-*******************************************************************************/
-/*double AD5933_CalculateImpedance2(double gainFactor,
-                                 unsigned char freqFunction)
-{
-    signed short  realData  = 0;
-    signed short  imagData  = 0;
-    double        magnitude = 0;
-    double        impedance = 0;
-    unsigned char status    = 0;
-    
-    AD5933_SetRegisterValue(AD5933_REG_CONTROL_HB,
-                            AD5933_CONTROL_FUNCTION(freqFunction) | 
-                            AD5933_CONTROL_RANGE(currentRange) | 
-                            AD5933_CONTROL_PGA_GAIN(currentGain),
-                            1);
-    status = 0;
-    while((status & AD5933_STAT_DATA_VALID) == 0)
-    {
-        status = AD5933_GetRegisterValue(AD5933_REG_STATUS,1);
-    }
-    realData = AD5933_GetRegisterValue(AD5933_REG_REAL_DATA,2);
-    imagData = AD5933_GetRegisterValue(AD5933_REG_IMAG_DATA,2);
-    magnitude = sqrtf((realData * realData) + (imagData * imagData));
-    
-    impedance =  1 / (magnitude * gainFactor);
-    
-    return impedance;    
-}*/
 
 /**************************************************************************//**
  * @brief Set AD5933 to standby mode
@@ -589,16 +466,5 @@ bool AD5933_SetToStandBy(void)
 								AD5933_CONTROL_PGA_GAIN(currentGain),
 								1);
     return resultado;
-}
-
-
-bool wiringPiI2CWriteReg8(int i2cdevice,unsigned char writeD_0,unsigned char writeD_1)
-{
-
-}
-
-int wiringPiI2CReadReg8(int i2cdevice,unsigned char registerAddress)
-{
-
 }
 
